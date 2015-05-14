@@ -34,11 +34,11 @@ impl redis::IntoConnectionInfo for ThreadConnectionInfo {
 }
 
 trait RedisFnBox {
-    fn call_box(self: Box<Self>, cx: &mut redis::Connection);
+    fn call_box(self: Box<Self>, cx: &redis::Connection);
 }
 
-impl<F: FnOnce(&mut redis::Connection)> RedisFnBox for F {
-    fn call_box(self: Box<F>, cx: &mut redis::Connection) {
+impl<F: FnOnce(&redis::Connection)> RedisFnBox for F {
+    fn call_box(self: Box<F>, cx: &redis::Connection) {
         (*self)(cx);
     }
 }
@@ -91,7 +91,7 @@ impl<'a> Drop for Sentinel<'a> {
 /// let (tx, rx) = channel();
 /// for i in 0..8 {
 ///     let tx = tx.clone();
-///     pool.execute(move|cx: &mut redis::Connection| {
+///     pool.execute(move|cx: &redis::Connection| {
 ///         // Query the connection and return the result
 ///         // let result = cx.???;
 ///         // tx.send(result).unwrap();
@@ -131,9 +131,9 @@ impl RedisPool {
 
     /// Executes the function `job` on a thread in the pool.
     pub fn execute<F>(&self, job: F)
-        where F : FnOnce(&mut redis::Connection) + Send + 'static
+        where F : FnOnce(&redis::Connection) + Send + 'static
     {
-        self.jobs.send(Box::new(move |cx: &mut redis::Connection| job(cx))).unwrap();
+        self.jobs.send(Box::new(move |cx: &redis::Connection| job(cx))).unwrap();
     }
 }
 
@@ -150,7 +150,7 @@ fn spawn_in_pool(jobs: Arc<Mutex<Receiver<Thunk<'static>>>>, cx_info: ThreadConn
             }
         };
 
-        let mut cx = match client.get_connection() {
+        let cx = match client.get_connection() {
             Ok(cx) => cx,
             Err(..) => {
                 sentinel.cancel();
@@ -167,7 +167,7 @@ fn spawn_in_pool(jobs: Arc<Mutex<Receiver<Thunk<'static>>>>, cx_info: ThreadConn
             };
 
             match message {
-                Ok(job) => job.call_box(&mut cx),
+                Ok(job) => job.call_box(&cx),
 
                 // The Threadpool was dropped.
                 Err(..) => break
