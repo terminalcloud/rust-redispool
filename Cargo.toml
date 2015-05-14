@@ -1,16 +1,15 @@
 [package]
 
-name = "threadpool"
-version = "0.1.4"
-authors = ["The Rust Project Developers"]
+name = "redispool"
+version = "0.1.0"
+authors = ["Zach Pomerantz <zach@terminal.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/rust-lang/threadpool"
-homepage = "https://github.com/rust-lang/threadpool"
-documentation = "http://doc.rust-lang.org/threadpool"
+repository = "https://github.com/terminalcloud/rust-redispool"
+homepage = "https://github.com/terminalcloud/rust-redispool"
 description = """
-A thread pool for running a number of jobs on a fixed set of worker threads.
+A redis thread pool for maintaining open connections for jobs on a fixed set of worker threads.
 """
 
-[features]
-scoped-pool = []
+[dependencies]
+redis = "0.3"
