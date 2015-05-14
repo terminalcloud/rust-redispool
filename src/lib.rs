@@ -17,6 +17,7 @@ extern crate redis;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::sync::{Arc, Mutex};
 use std::thread;
+pub use redis::*;
 
 #[derive(Clone)]
 struct ThreadConnectionInfo {
